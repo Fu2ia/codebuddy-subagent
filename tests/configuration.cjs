@@ -1,0 +1,41 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),assert=require('node:assert/strict');
+const {spawnSync}=require('node:child_process');
+const root=fs.mkdtempSync(path.join(process.env.CODEBUDDY_TEST_TMPDIR || os.tmpdir(),'codebuddy-install-'));
+const script=path.resolve(__dirname,'../scripts/configure.cjs'),manager=path.resolve(__dirname,'../scripts/manage.cjs'),runner=path.resolve(__dirname,'../scripts/task.cjs');
+const home=path.join(root,'settings'),answers=path.join(root,'answers.json'),cli=path.join(root,'mock.cjs');
+const config=require('../scripts/config.cjs');
+const env={...process.env,CODEBUDDY_SUBAGENT_HOME:home,CODEBUDDY_API_KEY:'public-fixture',CODEBUDDY_AUTH_TOKEN:'',CODEBUDDY_CLI:'',CODEBUDDY_REGION:'',CODEBUDDY_CRED_DIR:''};
+fs.writeFileSync(cli,`const fs=require('node:fs'),path=require('node:path'),a=process.argv.slice(2);if(a.includes('--version')){console.log('1.2.3');process.exit()}const p=a.includes('--')?a.at(-1):fs.readFileSync(0,'utf8');fs.writeFileSync(path.join(process.cwd(),'observed.json'),JSON.stringify({region:process.env.CODEBUDDY_REGION,cred_dir:process.env.CODEBUDDY_CRED_DIR,model:a[a.indexOf('--model')+1],turns:a[a.indexOf('--max-turns')+1],prompt:p}));console.log(JSON.stringify({type:'result',is_error:false,subtype:'success',result:'{"ok":true}',session_id:a[a.indexOf('--session-id')+1],providerData:{model:a[a.indexOf('--model')+1]}}));`);
+let passed=0;
+function call(file,args,code=0,extra={}) {const r=spawnSync(process.execPath,[file,...args],{env:{...env,...extra},encoding:'utf8',timeout:15000});assert.ifError(r.error);assert.equal(r.status,code,r.stdout+r.stderr);passed++;return JSON.parse(r.stdout)}
+function install(value,code=0){fs.writeFileSync(answers,JSON.stringify(value));return call(script,['--answers',answers],code)}
+call(script,[],2);assert(!fs.existsSync(home));
+install({delegation:'auto'},2);assert(!fs.existsSync(home));
+install({model:'fixture-custom',apiKey:'not-accepted'},2);
+install({model:'fixture-custom',timeout_s:0},2);
+install({model:'fixture-custom',shell_default_ms:2000,shell_max_ms:1000},2);
+install({model:'fixture-custom',cli,delegation:'auto',timeout_s:77,max_turns:9,command_target_s:33,shell_default_ms:5000,shell_max_ms:30000,language:'zh-CN',region:'test-region',credential_dir:root});
+let s=call(manager,['doctor']);assert(s.installation_complete);assert.equal(s.preferences.model,'fixture-custom');assert.equal(s.preferences.delegation,'auto');assert.equal(s.preferences.language,'zh-CN');assert.equal(s.extension_fallback_enabled,false);
+const result=path.join(root,'result.json'),card=path.join(root,'card.json');
+const cardValue={id:'config-probe',root,task_type:'extraction',prompt:'Return JSON {"ok":true}',result_file:result,verify:[process.execPath,'-e','process.exit(0)']};
+fs.writeFileSync(card,JSON.stringify(cardValue));s=call(runner,['run',card]);assert.equal(s.model_source,'user-preference');assert.equal(s.timeout_s,77);
+let seen=JSON.parse(fs.readFileSync(path.join(root,'observed.json')));assert.equal(seen.model,'fixture-custom');assert.equal(seen.turns,'9');assert.equal(seen.region,'test-region');assert.equal(seen.cred_dir,root);assert(seen.prompt.includes('within 33 seconds'));assert(seen.prompt.includes('default is 5000 ms'));
+fs.writeFileSync(card,JSON.stringify({...cardValue,id:'card-override',model:'fixture-override',max_turns:3,timeout_s:12,result_file:path.join(root,'override.json')}));
+s=call(runner,['run',card],0,{CODEBUDDY_REGION:'env-region'});assert.equal(s.requested_model,'fixture-override');assert.equal(s.timeout_s,12);assert.equal(JSON.parse(fs.readFileSync(path.join(root,'observed.json'))).region,'env-region');
+install({model:'fixture-custom',auth_mode:'environment'});
+const creddir=path.join(root,'credentials');fs.mkdirSync(creddir);fs.writeFileSync(path.join(creddir,'Tencent-Cloud.coding-copilot.info'),JSON.stringify({auth:{accessToken:'public-fixture-token',expiresAt:Date.now()+60000}}));
+const noAuth={CODEBUDDY_API_KEY:'',CODEBUDDY_AUTH_TOKEN:'',CODEBUDDY_CRED_DIR:creddir};
+fs.writeFileSync(card,JSON.stringify({...cardValue,id:'no-fallback',result_file:path.join(root,'no-fallback.json')}));
+call(runner,['run',card],3,noAuth);assert(!fs.existsSync(path.join(root,'.handoff/jobs/no-fallback')));
+install({model:'fixture-custom',auth_mode:'environment_or_extension'});
+fs.writeFileSync(card,JSON.stringify({...cardValue,id:'fallback',result_file:path.join(root,'fallback.json')}));
+s=call(runner,['run',card],0,noAuth);assert.equal(s.status,'done');
+const installed=fs.readFileSync(path.join(home,'profile.json'),'utf8');assert(!installed.includes('public-fixture-token'));assert(!installed.includes('public-fixture"'));
+// Old owned profiles are readable and can be upgraded, without guessing a model.
+const legacy=path.join(root,'legacy');fs.mkdirSync(legacy);fs.writeFileSync(path.join(legacy,'profile.json'),JSON.stringify({owner:config.OWNER,revision:1,enabled:false,cli}));
+s=call(manager,['doctor','--home',legacy]);assert.equal(s.installation_complete,false);
+call(manager,['repair','--home',legacy],2);
+call(manager,['repair','--home',legacy,'--model','fixture-migrated']);
+const migrated=config.read(path.join(legacy,'profile.json'));assert.equal(migrated.enabled,false);assert.equal(migrated.preferences.model,'fixture-migrated');assert.equal(migrated.revision,2);
+console.log(JSON.stringify({passed,root,real_cli_invoked:false,real_credentials_used:false}));
