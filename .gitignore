@@ -1,0 +1,9 @@
+.local/
+node_modules/
+.handoff/
+*.log
+.env
+.env.*
+answers*.json
+*-result.json
+*.zip
