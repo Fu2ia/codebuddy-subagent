@@ -6,6 +6,8 @@
 
 `edit` uses acceptEdits and the caller's narrow authorized allow rules. Neither mode is OS isolation. Use an appropriate sandbox or working copy when file isolation is required.
 
+Choose mode by required tools, not task complexity or duration. File-only analysis stays `read_only`. A command-based investigation can explicitly use `task_type: investigation` with `mode: edit`; specify narrowly authorized diagnostic commands and writable report/temporary paths. A repair may use `isolated_edit` with its permitted change scope. `edit` enables execution capabilities, not arbitrary changes. Select mode before dispatch because resume preserves it.
+
 ## input_file
 
 Optional `input_file` must be existing UTF-8 text inside root and outside internal jobs, at most 1 MiB, with no NUL bytes or invalid UTF-8. Select authorized excerpts before passing them. The executor sends prompt plus input through stdin, marking the input as untrusted task data. Without input_file, prompts over 12000 characters also use stdin. State records transport, input path, size, and SHA256. Stdin avoids argument-size limits, not model token usage or CLI logging.
