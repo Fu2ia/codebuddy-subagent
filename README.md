@@ -8,6 +8,7 @@ Delegate bounded work to a local CodeBuddy CLI, including autonomous multi-step 
 
 - File-only investigation, log analysis, review, extraction, and isolated editing; command-based diagnosis with explicitly scoped execution permissions.
 - Task cards with clear ownership, acceptance criteria, compact evidence-based returns, and independent verification.
+- Explicit task-selected skill text and dependencies, with content hashes, private snapshots, and unchanged selections across continuation.
 - Fresh task IDs, explicit scopes, bounded CLI execution and process-tree cleanup.
 - Stdin input, independent JSON Schema subset validation, and a required business verifier.
 - Same-session continuation with locks and cumulative CLI budgets.
@@ -44,6 +45,16 @@ node scripts/manage.cjs run --card <absolute-task-card.json>
 node scripts/task.cjs status <absolute-project-root> <task-id>
 ```
 
+To pass instructions from another local skill, add an explicit `skills` array to the task card:
+
+```json
+{
+  "skills": [{"path": "/absolute/skills/example/SKILL.md", "files": ["references/checklist.md"]}]
+}
+```
+
+Only selected entry/dependency text is bundled through stdin; there is no automatic skill discovery or transfer of Codex tools, credentials, or connectors. Task scope and mode still apply. Resume inherits the selection and requires unchanged files. See [task-selected skills](references/skills.md) for limits, path rules, sharing checks, and provenance.
+
 Read [task cards](references/tasks.md), [advanced fields](references/advanced-tasks.md), and [management](references/management.md) for precise behavior. Tool restrictions and scope prompts are not an OS sandbox. Sending source/data to CodeBuddy must comply with your host permissions and the task's authorization.
 
 ## Offline verification
@@ -53,6 +64,7 @@ node tests/management.cjs
 node tests/configuration.cjs
 node tests/advanced.cjs
 node tests/regression.cjs
+node tests/skills.cjs
 ```
 
 Tests use synthetic data and fake CLI entries; they require no API access. Windows symlink privileges can affect path tests; report skips accurately. CLI 2.177.1 and Node.js 22 were the Windows compatibility baseline. POSIX code paths are included but have not been validated on a POSIX host in this release.
@@ -60,3 +72,7 @@ Tests use synthetic data and fake CLI entries; they require no API access. Windo
 ## Sharing and upgrades
 
 Only share the distribution files. `.local/`, logs, task artifacts, answer files, environment files, credentials, and machine-specific settings must stay private. The included `.gitignore` helps, but inspect staged files before publishing. When upgrading an installed copy, preserve `.local/`. Profiles are not included in this repository; installation asks each user for their own choices.
+
+## License
+
+This repository is licensed under the [MIT License](LICENSE), Copyright (c) 2026 Fu2ia. CodeBuddy CLI, external services, and separately selected skills remain subject to their own terms and licenses.

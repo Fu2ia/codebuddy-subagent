@@ -20,6 +20,8 @@ The example budgets are illustrative, not universal defaults or long-task ceilin
 
 ## Compact return contract
 
+Optional `skills` explicitly bundles other local skill instructions and selected text dependencies. It does not inherit Codex's skill catalog or tools. Before using it, read [task-selected skills](skills.md) for the selector format, sharing checks, limits, provenance, and immutable continuation behavior.
+
 Put these choices in the card's existing `scope` and `prompt`; they are not new executor fields:
 
 - Identify the decision or artifact Codex needs, exact permitted paths, and what the worker owns. Route substantive unread input to the worker, rather than copying an analysis already performed by Codex.

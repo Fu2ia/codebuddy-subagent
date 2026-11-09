@@ -36,6 +36,8 @@ Report results, decisive evidence, verification, and material limitations. Discu
 
 ## Conditional details and boundaries
 
+When a task needs another skill, use explicit task-card `skills` selectors as described in [task-selected skills](references/skills.md). Review applicability, sharing rights, required tools, and necessary dependencies before dispatch. Bundle only the relevant entry and listed text files; keep task scope and permissions authoritative. Inspect recorded skill hashes/snapshots during acceptance. Resume inherits unchanged selections; changed instructions need a fresh task.
+
 For large inputs, strict JSON, or same-session follow-ups, read [advanced tasks](references/advanced-tasks.md). Resume uses a new card ID/result and latest `resume_from`, retaining scope, model, permissions, and remaining chain budget. New sessions for second opinions serve assurance, not automatic efficiency.
 
 Investigation, log analysis, review, and extraction default to `read_only`: plan mode, Read/Grep/Glob only, empty strict MCP configuration, parent-saved reports. For authorized command-based diagnosis or repair, select `mode: edit` and narrow permitted actions; see [mode selection](references/advanced-tasks.md). Editing defaults to `edit` with acceptEdits. Tool restrictions are not an OS sandbox and do not prevent cache/log writes; use isolation when needed.

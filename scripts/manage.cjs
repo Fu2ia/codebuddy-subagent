@@ -7,7 +7,7 @@ const crypto = require('node:crypto');
 const { spawn, spawnSync } = require('node:child_process');
 const config = require('./config.cjs');
 const { OWNER, fail, plainPath, read, cliPath } = config;
-const required = ['task.cjs', 'task-features.cjs', 'task-chain.cjs', 'validate-result.cjs', 'config.cjs', 'configure.cjs'];
+const required = ['task.cjs', 'task-features.cjs', 'task-chain.cjs', 'task-skills.cjs', 'validate-result.cjs', 'config.cjs', 'configure.cjs'];
 const preferenceFlags = {'--model':'model','--delegation':'delegation','--timeout-s':'timeout_s','--max-turns':'max_turns',
   '--command-target-s':'command_target_s','--shell-default-ms':'shell_default_ms','--shell-max-ms':'shell_max_ms',
   '--auth-mode':'auth_mode','--credential-dir':'credential_dir','--region':'region','--language':'language'};

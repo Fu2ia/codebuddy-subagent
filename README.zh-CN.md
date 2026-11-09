@@ -8,6 +8,7 @@
 
 - 文件只读调查、日志分析、变更审查、结构提取与隔离编辑；明确限定执行权限后可开展命令诊断。
 - 任务卡明确工作归属、验收标准、简明且有证据的返回内容，以及独立验证方式。
+- 按任务显式传递其他技能及所选文本依赖，记录内容哈希和私有快照，续接时保持选择不变。
 - 新任务 ID、明确范围、会话超时与进程树清理。
 - stdin 输入、独立 JSON Schema 子集校验和必填业务验收程序。
 - 同会话续接、互斥锁与累计 CLI 时间预算。
@@ -44,6 +45,16 @@ node scripts/manage.cjs run --card <任务卡绝对路径.json>
 node scripts/task.cjs status <项目绝对路径> <任务ID>
 ```
 
+需要复用其他本地技能的指令时，在完整任务卡中加入显式的 `skills` 数组：
+
+```json
+{
+  "skills": [{"path": "C:\\Users\\you\\.codex\\skills\\example\\SKILL.md", "files": ["references/checklist.md"]}]
+}
+```
+
+仅将所选入口和依赖的文本通过 stdin 传入，不会自动发现技能，也不会传递 Codex 的工具、凭据或连接器。原任务范围和模式继续生效。续接时继承技能选择，并要求源文件保持不变。大小限制、路径规则、分享检查和来源记录见[按任务传递技能](references/skills.md)。
+
 精确行为见[任务卡](references/tasks.md)、[高级字段](references/advanced-tasks.md)和[配置管理](references/management.md)。工具限制和提示中的路径范围不等于操作系统沙箱；发送给 CodeBuddy 的源码/数据仍需符合宿主权限和当前任务授权。
 
 ## 离线验证
@@ -53,6 +64,7 @@ node tests/management.cjs
 node tests/configuration.cjs
 node tests/advanced.cjs
 node tests/regression.cjs
+node tests/skills.cjs
 ```
 
 测试仅使用合成数据和假 CLI，不需要 API。Windows 路径测试可能需要符号链接权限，应如实记录跳过项。当前 Windows 验证基线为 CLI 2.177.1、Node.js 22；包含 POSIX 代码路径，但本次未在 POSIX 主机上验证。
@@ -60,3 +72,7 @@ node tests/regression.cjs
 ## 分享与升级
 
 只上传发布文件，保留 `.local/`、日志、任务产物、答案文件、环境文件、凭据和本机配置在私有位置。`.gitignore` 只能辅助，发布前仍要检查暂存文件。升级已安装技能时保留 `.local/`。仓库不包含个人档案，每位用户安装时自行选择偏好。
+
+## 许可
+
+本仓库采用 [MIT 许可证](LICENSE)，Copyright (c) 2026 Fu2ia。CodeBuddy CLI、外部服务和另外选择传递的技能仍适用各自的条款及许可证。
