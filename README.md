@@ -2,11 +2,12 @@
 
 [简体中文](README.zh-CN.md)
 
-Delegate bounded work to a local CodeBuddy CLI, keep Codex in charge of review, and check the actual result before accepting it. This is an external CLI integration, not an ACP bridge or native agent registration.
+Delegate bounded work to a local CodeBuddy CLI, including autonomous multi-step investigation and implementation. CodeBuddy can plan, troubleshoot, repair, and validate within its assigned scope; Codex owns coordination, integration, and independent acceptance. This is an external CLI integration, not an ACP bridge or native agent registration.
 
 ## Features
 
-- Read-only investigation, log analysis, review, extraction, and isolated editing.
+- File-only investigation, log analysis, review, extraction, and isolated editing; command-based diagnosis with explicitly scoped execution permissions.
+- Task cards with clear ownership, acceptance criteria, compact evidence-based returns, and independent verification.
 - Fresh task IDs, explicit scopes, bounded CLI execution and process-tree cleanup.
 - Stdin input, independent JSON Schema subset validation, and a required business verifier.
 - Same-session continuation with locks and cumulative CLI budgets.
@@ -29,6 +30,12 @@ Configure API keys/tokens in your environment or supported CodeBuddy login flow,
 ## Use
 
 Ask Codex to use CodeBuddy for a bounded task. With `delegation=auto`, Codex can choose suitable subtasks within your current authorization; `explicit` requires a current request. Codex remains responsible for monitoring and independent review. The skill communicates in your language by default, even though its instructions are English.
+
+Choose delegation by useful ownership and handoff cost. Both small tasks and complex workflows can qualify when CodeBuddy can own unfinished work, compress unread inputs, or overlap independent Codex work. Keep trivial summaries and edits local when handing them off would cost more. Deterministic filtering, counting, and exact-field extraction usually belong in scripts. Ordinary calls do not require savings calculations or efficiency reports.
+
+For multi-step work, define the goal, permitted paths and actions, acceptance checks, and stop conditions. Budget turns and time for the whole workflow, including diagnosis, failed approaches, repair, validation, and reporting. Let CodeBuddy handle ordinary failures within that scope. Request compact conclusions, decisive evidence, and artifact paths; Codex reviews the actual diff or critical claims and suitable checks before acceptance.
+
+Choose mode by the tools needed: file-only analysis defaults to `read_only`; command-based investigation requires `mode: edit` with narrowly authorized diagnostic commands and writable paths. Mode does not expand authorization. See [task patterns](references/task-patterns.md) for examples.
 
 For direct task-card use:
 
